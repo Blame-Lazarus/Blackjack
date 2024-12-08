@@ -12,7 +12,7 @@
 
 using namespace std;
 
-// Utility function for displaying cards using for_each
+// Utility function for displaying cards
 void displayCard(int card) {
     cout << card << " ";
 }
@@ -54,7 +54,6 @@ void getCardGraphic(int card, char cardLines[6][7]) {
     }
 
     if (strlen(rankStr) == 1) {
-        // Single character rank
         cardLines[1][0] = '|';
         cardLines[1][1] = rankStr[0];
         cardLines[1][5] = '|';
@@ -63,7 +62,6 @@ void getCardGraphic(int card, char cardLines[6][7]) {
         cardLines[4][4] = rankStr[0];
         cardLines[4][5] = '|';
     } else if (strlen(rankStr) == 2) {
-        // Two character rank, e.g., "10"
         cardLines[1][0] = '|';
         cardLines[1][1] = rankStr[0];
         cardLines[1][2] = rankStr[1];
@@ -136,8 +134,6 @@ int CardDeck::drawCard() {
     }
 
     int card;
-
-    //do loop
     do {
         card = rand() % 13 + 1; // Random card between 1 and 13
     } while (cardCounts[card] == 0); // Ensure card is available
@@ -147,16 +143,14 @@ int CardDeck::drawCard() {
     return card; // Return the card number (1-13)
 }
 
-// Trigger to reshuffle
 bool CardDeck::needsReshuffling() const {
     int totalCardsUsed = 0;
     for (const auto& p : cardCounts) {
-        totalCardsUsed += (28 - p.second); // Calculate total used cards
+        totalCardsUsed += (28 - p.second);
     }
-    return totalCardsUsed >= (52 * 7 * 3 / 4); // Check if reshuffling is needed (3/4 mark)
+    return totalCardsUsed >= (52 * 7 * 3 / 4);
 }
 
-// Reshuffle deck
 void CardDeck::reshuffleDeck() {
     cout << "Reshuffling the deck..." << endl;
     while (!returnedCards.empty()) {
@@ -165,12 +159,11 @@ void CardDeck::reshuffleDeck() {
         returnedCards.pop();
     }
     initializeDeck();
-    shuffleDeck(); // Shuffle the deck after reinitializing
+    shuffleDeck();
 }
 
-// Return used card to stack
 void CardDeck::returnCard(int card) {
-    returnedCards.push(card); // Push returned card to discard stack
+    returnedCards.push(card);
 }
 
 void CardDeck::printCardCounts() const {
@@ -180,7 +173,6 @@ void CardDeck::printCardCounts() const {
     }
 }
 
-// display the deck status
 void CardDeck::displayDeckStatus() const {
     cout << "Deck status:" << endl;
     cout << "Total unique cards used: " << usedCards.size() << endl;
@@ -190,24 +182,17 @@ void CardDeck::displayDeckStatus() const {
 
 Player::Player() : score(0) {}
 
-// Deal cards to the player
 void Player::addCard(int card) {
-    int cardValue;
-    if (card > 10) {
-        cardValue = 10;
-    } else if (card == 1) {
-        cardValue = 11; // Initially count Ace as 11
-    } else {
-        cardValue = card;
-    }
-    hand.push_front(card);
+    hand.insert(card);
     score = calculateScore();
 }
 
-// Calculate score
 int Player::calculateScore() {
+    int sz = 0;
+    int* arr = hand.toArray(sz);
     int total = 0, aces = 0;
-    for (int card : hand) {
+    for (int i = 0; i < sz; i++) {
+        int card = arr[i];
         int cardValue;
         if (card > 10) {
             cardValue = 10;
@@ -223,114 +208,92 @@ int Player::calculateScore() {
         total -= 10;
         aces--;
     }
+    delete[] arr;
     return total;
 }
 
-// Check if player has blackjack
 bool Player::hasBlackjack() {
     return score == 21;
 }
 
-// Display player's hand with card graphics
-// Display the player's or house's hand with card graphics
 void Player::showHand(bool hideFirstCard) {
-    const int maxCards = 10;  // Maximum cards in hand
-    char allCardLines[maxCards][6][7]; // Array to store card graphics
-    int numCards = 0;
+    int sz = 0;
+    int* arr = hand.toArray(sz);
 
-    // Generate graphics for each card
-    slist<int>::iterator it = hand.begin();
-    for (int i = 0; it != hand.end(); ++it, ++numCards) {
-        if (hideFirstCard && numCards == 0) {
-            getHiddenCardGraphic(allCardLines[numCards]); // Use hidden card graphic
+    char allCardLines[50][6][7];
+    int numCards = sz;
+    for (int i = 0; i < sz; i++) {
+        if (hideFirstCard && i == 0) {
+            getHiddenCardGraphic(allCardLines[i]);
         } else {
-            getCardGraphic(*it, allCardLines[numCards]); // Generate actual card graphic
+            getCardGraphic(arr[i], allCardLines[i]);
         }
     }
 
-    // Print the cards line by line
-    for (int line = 0; line < 6; ++line) { // Each card has 6 lines
+    for (int line = 0; line < 6; ++line) {
         for (int c = 0; c < numCards; ++c) {
-            cout << allCardLines[c][line]; // Print the current line of the current card
-            if (c < numCards - 1) {
-                cout << " "; // Add a space between cards on the same line
-            }
+            cout << allCardLines[c][line];
+            if (c < numCards - 1) cout << " ";
         }
-        cout << endl; // Move to the next line after printing one row of all cards
+        cout << endl;
     }
 
-    // Print the total score if the first card is hidden
     if (hideFirstCard) {
-        cout << "Total: ??" << endl; // Hide total score
+        cout << "Total: ??" << endl;
     } else {
         cout << "Total: " << getScore() << endl;
     }
-}
 
+    delete[] arr;
+}
 
 int Player::getScore() const {
     return score;
 }
 
-// Clear the hand
 void Player::clearHand() {
     hand.clear();
     score = 0;
 }
 
-// Sort the hand for the player
 void Player::sortHand() {
-    int handSize = distance(hand.begin(), hand.end());
-    int* handArray = new int[handSize];
-    int index = 0;
-
-    for (int card : hand) {
-        handArray[index++] = card;
-    }
-
-    sort(handArray, handArray + handSize);
-
-    hand.clear();
-    for (int i = 0; i < handSize; ++i) {
-        hand.push_front(handArray[handSize - i - 1]);
-    }
-
-    delete[] handArray;
+    // AVL tree is always maintained in a balanced, but we used insertion order.
+    // The actual "sorting" is intrinsic since we can access it in sorted order via toArray().
+    // No action needed here.
 }
 
-// Display sorted hand with card graphics
 void Player::showSortedHand() {
-    // Max number of cards in hand
-    const int maxHandSize = 10;
-    char allCardLines[maxHandSize][6][7];
-    int numCards = 0;
+    // The hand is obtained in sorted order from toArray().
+    int sz = 0;
+    int* arr = hand.toArray(sz);
 
-    // Iterate over the hand and generate card graphics
-    slist<int>::iterator it;
-    int cardIndex = 0;
-    for (it = hand.begin(); it != hand.end(); ++it) {
-        // Generate card graphic
-        getCardGraphic(*it, allCardLines[cardIndex]);
-        cardIndex++;
+    char allCardLines[50][6][7];
+    int numCards = sz;
+    for (int i = 0; i < sz; i++) {
+        getCardGraphic(arr[i], allCardLines[i]);
     }
-    numCards = cardIndex;
 
-    // Now, print the cards line by line
     for (int line = 0; line < 6; ++line) {
         for (int c = 0; c < numCards; ++c) {
-            cout << allCardLines[c][line] << " ";
+            cout << allCardLines[c][line];
+            if (c < numCards - 1) cout << " ";
         }
         cout << endl;
     }
-    // Print total score
+
     cout << "Total: " << getScore() << endl;
+
+    delete[] arr;
 }
 
-string Player::handToString() const {
+std::string Player::handToString() const {
+    int sz = 0;
+    int* arr = (const_cast<AVLTree*>(&hand))->toArray(sz);
     string result;
-    for (int card : hand) {
-        result += to_string(card) + " ";
+    for (int i = 0; i < sz; i++) {
+        result += to_string(arr[i]) + " ";
     }
+    delete[] arr;
     return result;
 }
 
@@ -349,16 +312,15 @@ void GameStatistics::recordResult(int result) {
     }
 }
 
-// Display game information
 void GameStatistics::displayStatistics() const {
     cout << "Game Statistics:" << endl;
     cout << "Total games played: " << totalGames << endl;
     cout << "Player wins: " << playerWins << " (" << fixed << setprecision(2)
-         << (static_cast<float>(playerWins) / totalGames * 100) << "%)" << endl;
+         << (totalGames > 0 ? (static_cast<float>(playerWins) / totalGames * 100) : 0) << "%)" << endl;
     cout << "House wins: " << houseWins << " (" << fixed << setprecision(2)
-         << (static_cast<float>(houseWins) / totalGames * 100) << "%)" << endl;
+         << (totalGames > 0 ? (static_cast<float>(houseWins) / totalGames * 100) : 0) << "%)" << endl;
     cout << "Ties: " << ties << " (" << fixed << setprecision(2)
-         << (static_cast<float>(ties) / totalGames * 100) << "%)" << endl;
+         << (totalGames > 0 ? (static_cast<float>(ties) / totalGames * 100) : 0) << "%)" << endl;
 }
 
 // BlackjackGame class
@@ -384,24 +346,19 @@ void BlackjackGame::playGame() {
     bool playing = true;
     int numPlayers;
 
-    // prompt for number of players
     cout << "Enter the number of players (1-3): ";
     cin >> numPlayers;
     if (numPlayers < 1 || numPlayers > 3) {
-        // game will switch to default 1 player
         cout << "Invalid number of players. Starting with 1 player." << endl;
         numPlayers = 1;
     }
 
-    //initialize game with number of players
     initializePlayers(numPlayers);
 
-    // Game cycle
     while (playing) {
         float bet;
         placeBet(bet);
 
-        // Deal cards to players
         for (int i = 0; i < numPlayers; ++i) {
             Player& player = players.front();
             player.clearHand();
@@ -416,7 +373,6 @@ void BlackjackGame::playGame() {
             players.pop();
         }
 
-        //Deal cards to house
         Player house;
         house.addCard(deck.drawCard());
         house.addCard(deck.drawCard());
@@ -429,10 +385,8 @@ void BlackjackGame::playGame() {
             bool playerBust = false;
             char choice;
 
-            // Array for card graphics
-            char allCardLines[1][6][7]; // Adjusted to hold a single card graphic
+            char allCardLines[1][6][7];
 
-            // Ask player for choice
             while (!playerBust) {
                 cout << "Player " << i + 1 << ", hit or stand? (h/s): ";
                 cin >> choice;
@@ -441,8 +395,6 @@ void BlackjackGame::playGame() {
                     int card = deck.drawCard();
                     player.addCard(card);
                     cout << "Player " << i + 1 << " dealt card: " << endl;
-
-                    // Generate and print card graphic
                     getCardGraphic(card, allCardLines[0]);
                     for (int line = 0; line < 6; ++line) {
                         cout << allCardLines[0][line] << endl;
@@ -468,7 +420,6 @@ void BlackjackGame::playGame() {
             players.pop();
         }
 
-        // Reveal the house hidden card
         cout << "House reveals second card." << endl;
         house.showHand();
         while (house.getScore() < 17) {
@@ -490,10 +441,8 @@ void BlackjackGame::playGame() {
             finalPlayers.pop();
         }
 
-        // Display statistics after each round
         stats.displayStatistics();
 
-        // Prompt for a new game
         cout << "Play again? (y/n): ";
         char playAgain;
         cin >> playAgain;
@@ -502,11 +451,9 @@ void BlackjackGame::playGame() {
         }
     }
 
-    // Display game history
     displayHistory();
 }
 
-// Function to place bet
 void BlackjackGame::placeBet(float& bet) {
     cout << "Current balance: $" << fixed << setprecision(2) << balance << endl;
     cout << "Place your bet: ";
@@ -518,48 +465,31 @@ void BlackjackGame::placeBet(float& bet) {
     balance -= bet;
 }
 
-// Function to handle results
 void BlackjackGame::handleResult(Player& player, Player& house, float& bet) {
-
-    //Player bust case
     if (player.getScore() > 21) {
         cout << "Player busts! House wins." << endl;
         logResult("Player busts");
         gameHistory[historyCount++] = -1;
         stats.recordResult(-1);
-    }
-
-    // If not busted
-
-    else if (house.getScore() > 21) {
+    } else if (house.getScore() > 21) {
         cout << "House busts! Player wins!" << endl;
         balance += bet * 2;
         logResult("House busts, player wins");
         gameHistory[historyCount++] = 1;
         stats.recordResult(1);
-    }
-
-    // If player wins
-    else if (player.getScore() > house.getScore()) {
+    } else if (player.getScore() > house.getScore()) {
         cout << "Player wins!" << endl;
         balance += bet * 2;
         logResult("Player wins");
         gameHistory[historyCount++] = 1;
         stats.recordResult(1);
-    }
-
-    // Tie case
-    else if (player.getScore() == house.getScore()) {
+    } else if (player.getScore() == house.getScore()) {
         cout << "It's a tie!" << endl;
         balance += bet;
         logResult("Tie");
         gameHistory[historyCount++] = 0;
         stats.recordResult(0);
-    }
-
-    // House wins
-
-    else {
+    } else {
         cout << "House wins." << endl;
         logResult("House wins");
         gameHistory[historyCount++] = -1;
@@ -581,7 +511,6 @@ void BlackjackGame::displayHistory() const {
     }
 }
 
-// This function saves the results of the game into a log
 void BlackjackGame::logResult(const string& result) {
     if (log.is_open()) {
         log << "Result: " << result << ", Balance: $" << fixed << setprecision(2) << balance << endl;
@@ -590,23 +519,21 @@ void BlackjackGame::logResult(const string& result) {
     }
 }
 
-// Detailed log
 void BlackjackGame::logDetailedState() {
     if (log.is_open()) {
         log << "Detailed game state: " << endl;
-        queue<Player> tempPlayers = players; // Create a copy of the queue to iterate over
+        queue<Player> tempPlayers = players;
 
         while (!tempPlayers.empty()) {
             Player player = tempPlayers.front();
             log << "Player hand: " << player.handToString() << " Score: " << player.getScore() << endl;
-            tempPlayers.pop(); // Remove the front element after processing
+            tempPlayers.pop();
         }
 
         log << "=====================================" << endl;
     }
 }
 
-// Rules of the game
 void BlackjackGame::printRules() const {
     cout << "Game Rules:" << endl;
     cout << "- Try to beat the house by getting as close to 21 as possible without going over." << endl;
@@ -615,7 +542,6 @@ void BlackjackGame::printRules() const {
     cout << "- Up to 3 players can join each game." << endl;
 }
 
-// Money Balance report
 void BlackjackGame::displayBalanceReport() const {
     cout << "Current balance report: $" << balance << endl;
     cout << "Initial balance: $" << initialBalance << endl;
