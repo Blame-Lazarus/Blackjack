@@ -1,0 +1,34 @@
+Initial balance: $100.00
+Final balance: $105.00
+Result: Player wins
+Initial balance: $100.00
+Final balance: $105.00
+Result: Final balance after quitting the game
+Result: Player wins, Balance: $105.00
+Result: Player wins, Balance: $210.00
+Result: Player wins, Balance: $110.00
+Result: Player wins, Balance: $120.00
+Result: House wins, Balance: $100.00
+Result: House busts, player wins, Balance: $200.00
+Result: Player wins with Blackjack, Balance: $300.00
+Result: Player wins, Balance: $600.00
+Result: House wins, Balance: $0.00
+Result: House busts, player wins, Balance: $200.00
+Result: Tie, Balance: $100.00
+Result: House busts, player wins, Balance: $110.00
+Result: Tie, Balance: $110.00
+Result: House wins, Balance: $0.00
+Result: Tie, Balance: $100.00
+Result: Player wins, Balance: $300.00
+Result: Player busts, Balance: $90.00
+Result: House busts, player wins, Balance: $120.00
+Result: House busts, player wins, Balance: $140.00
+Result: Player busts, Balance: $90.00
+Result: Player busts, Balance: $90.00
+Result: House busts, player wins, Balance: $110.00
+Result: House wins, Balance: $90.00
+Result: House wins, Balance: $0.00
+Result: Tie, Balance: $100.00
+Result: House wins, Balance: $90.00
+Result: Player wins, Balance: $150.00
+Result: Player wins, Balance: $200.00
