@@ -4,7 +4,6 @@
  * Purpose: Blackjack Game Project
  */
 
-// blackjack.h
 #ifndef BLACKJACK_H
 #define BLACKJACK_H
 
@@ -15,20 +14,20 @@
 #include <set>       // Set
 #include <stack>     // Stack
 #include <queue>     // Queue for players
-#include <algorithm> // For sort (used previously), not for random_shuffle now
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>     // Time
-#include <cstring>   // For strcpy
+#include <cstring>   // strcpy
 #include <iostream>
 #include <string>
 
 using namespace std;
 
-// Utility functions for displaying cards
+// Utility functions
 void getCardGraphic(int card, char cardLines[6][7]);
 void getHiddenCardGraphic(char cardLines[6][7]);
 
-// AVL Tree Implementation for player's hand
+// AVL Tree for player's hand
 class AVLTree {
 private:
     struct Node {
@@ -146,7 +145,7 @@ public:
     }
 };
 
-// Class representing a deck of cards for the game
+// Class for deck of cards
 class CardDeck {
 private:
     std::map<int, int> cardCounts; // Map
@@ -170,7 +169,7 @@ private:
                 deckArray[index++] = i;
             }
         }
-        // Use recursive shuffle instead of random_shuffle
+        // Recursive shuffle
         recursiveShuffleDeck(deckArray, 364);
     }
 
@@ -190,7 +189,6 @@ private:
             returnedCards.pop();
         }
         initializeDeck();
-        // Already recursively shuffled in initializeDeck
     }
 
 public:
@@ -200,7 +198,6 @@ public:
     }
 
     void shuffleDeck() {
-        // Replaced with recursion
         recursiveShuffleDeck(deckArray, 364);
         cout << "Shuffling the deck with recursion..." << endl;
     }
@@ -245,7 +242,7 @@ public:
     }
 };
 
-// Class representing a player
+// Player class
 class Player {
 private:
     AVLTree hand;
@@ -255,7 +252,7 @@ public:
     Player();
     ~Player() = default;
     void addCard(int card);
-    int calculateScore(); // Will be changed to recursion in blackjack_functions.cpp
+    int calculateScore();
     bool hasBlackjack();
     void showHand(bool hideFirstCard = false);
     int getScore() const;
@@ -265,7 +262,7 @@ public:
     std::string handToString() const;
 };
 
-// Class for game statistics
+// Game statistics class
 class GameStatistics {
 private:
     int totalGames;

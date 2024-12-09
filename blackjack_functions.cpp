@@ -4,10 +4,9 @@
  * Purpose: Blackjack Game Project
  */
 
-// blackjack_functions.cpp
 #include "blackjack.h"
 #include <iostream>
-#include <algorithm> // for sort
+#include <algorithm> // for sort (we will not use std::sort for the final solution)
 #include <ctime>
 #include <cstring>   // strcpy and sprintf
 
@@ -172,6 +171,80 @@ void Player::clearHand() {
     score = 0;
 }
 
+// We implement merge sort using recursion without vectors
+// Helper functions for merge sort:
+static void merge(int* arr, int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    int* L = new int[n1];
+    int* R = new int[n2];
+
+    for (int i = 0; i < n1; i++) {
+        L[i] = arr[left + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        R[j] = arr[mid + 1 + j];
+    }
+
+    int i = 0;
+    int j = 0;
+    int k = left;
+
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+
+    delete[] L;
+    delete[] R;
+}
+
+static void mergeSort(int* arr, int left, int right) {
+    if (left < right) {
+        int mid = (left + right) / 2;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid+1, right);
+        merge(arr, left, mid, right);
+    }
+}
+
+// Implement the sortHand function with recursion and merge sort
+void Player::sortHand() {
+    int sz = 0;
+    int* arr = hand.toArray(sz);
+    // arr currently holds the cards in sorted order because it's from an AVL inorder, 
+    // but we must follow the instructions and do a recursive merge sort anyway.
+    mergeSort(arr, 0, sz - 1);
+
+    // Clear the hand and reinsert the cards in sorted order
+    hand.clear();
+    for (int i = 0; i < sz; i++) {
+        hand.insert(arr[i]);
+    }
+
+    delete[] arr;
+    // After this, the hand is sorted.
+}
+
 void Player::showSortedHand() {
     int sz = 0;
     int* arr = hand.toArray(sz);
@@ -205,10 +278,6 @@ std::string Player::handToString() const {
     delete[] arr;
     return result;
 }
-void Player::sortHand() {
-    // Deleted
-}
-
 
 // Statistics
 
