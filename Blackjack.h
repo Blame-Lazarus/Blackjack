@@ -1,9 +1,3 @@
-/* 
- * Author: Luis Y Vazquez Quiroz
- * Created on: 12/08/2024
- * Purpose: Blackjack Game Project
- */
-
 #ifndef BLACKJACK_H
 #define BLACKJACK_H
 
@@ -20,6 +14,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <array> // Added to store performance data arrays
 
 using namespace std;
 
@@ -384,6 +379,12 @@ private:
     std::ofstream log;
     std::queue<Player> players;
     GameStatistics stats;
+
+    // Using std::hash<std::string> for hashing the player's final hand
+    // This is the name of the hashing function: std::hash<std::string>
+    std::hash<std::string> handHash;
+    // Map from hash value of hand to performance: [wins, losses, ties]
+    std::map<size_t, std::array<int,3>> handPerformance;
 
     void logDetailedState();
 

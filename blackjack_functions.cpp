@@ -1,9 +1,3 @@
-/* 
- * Author: Luis Y Vazquez Quiroz
- * Created on: 12/08/2024
- * Purpose: Blackjack Game Project
- */
-
 #include "blackjack.h"
 #include <iostream>
 #include <algorithm>
@@ -12,10 +6,14 @@
 
 using namespace std;
 
+// Functions
+
+// Display card
 void displayCard(int card) {
     cout << card << " ";
 }
 
+// Card graphics
 void displayCardGraphic(int card) {
     char cardLines[6][7];
     getCardGraphic(card, cardLines);
@@ -24,6 +22,7 @@ void displayCardGraphic(int card) {
     }
 }
 
+// Custom card graphics
 void getCardGraphic(int card, char cardLines[6][7]) {
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 6; ++j) {
@@ -36,6 +35,7 @@ void getCardGraphic(int card, char cardLines[6][7]) {
     strcpy(cardLines[5], "+-----+");
 
     char rankStr[3];
+    // Special cards
     if (card == 1) {
         strcpy(rankStr, "A");
     } else if (card == 11) {
@@ -48,6 +48,7 @@ void getCardGraphic(int card, char cardLines[6][7]) {
         sprintf(rankStr, "%d", card);
     }
 
+    // Other cards
     if (strlen(rankStr) == 1) {
         cardLines[1][0] = '|';
         cardLines[1][1] = rankStr[0];
@@ -78,6 +79,7 @@ void getCardGraphic(int card, char cardLines[6][7]) {
     }
 }
 
+// Hidden house card(needs debugging)
 void getHiddenCardGraphic(char cardLines[6][7]) {
     strcpy(cardLines[0], "+-----+");
     strcpy(cardLines[1], "|#####|");
@@ -87,6 +89,7 @@ void getHiddenCardGraphic(char cardLines[6][7]) {
     strcpy(cardLines[5], "+-----+");
 }
 
+// Recursive score calculation
 int recursiveScore(int* arr, int size, int &aces) {
     if (size == 0) return 0;
     int card = arr[0];
@@ -197,7 +200,8 @@ void Player::showHand(bool hideFirstCard, int handIndex) {
     char allCardLines[50][6][7];
     int numCards = sz;
     for (int i = 0; i < sz; i++) {
-        if (hideFirstCard && i == 0) {
+        // FIX: When hideFirstCard is true (for house), show the first card and hide the second. (Still nor working)
+        if (hideFirstCard && i == 1) {
             getHiddenCardGraphic(allCardLines[i]);
         } else {
             getCardGraphic(arr[i], allCardLines[i]);
@@ -213,6 +217,7 @@ void Player::showHand(bool hideFirstCard, int handIndex) {
     }
 
     if (hideFirstCard) {
+        // Total should be hidden if one card is hidden
         cout << "Total: ??" << endl;
     } else {
         cout << "Total: " << getScore(handIndex) << endl;
@@ -248,6 +253,7 @@ void Player::sortHand(int handIndex) {
     delete[] arr;
 }
 
+// Display hand sorted with mergesort
 void Player::showSortedHand(int handIndex) {
     int sz = 0;
     int* arr = hand[handIndex].toArray(sz);
@@ -290,6 +296,7 @@ void Player::setNumberOfHands(int n) {
     numberOfHands = n;
 }
 
+// Check for splitting conditions and give option to split
 bool Player::canSplit(int handIndex) {
     int sz = 0;
     int* arr = hand[handIndex].toArray(sz);
@@ -317,6 +324,7 @@ void Player::splitHand() {
     }
 }
 
+// Double down
 void Player::setDoubledDown(int handIndex, bool value) {
     doubledDown[handIndex] = value;
 }
@@ -339,6 +347,7 @@ void GameStatistics::recordResult(int result) {
     }
 }
 
+// Final game statistics
 void GameStatistics::displayStatistics() const {
     cout << "Game Statistics:" << endl;
     cout << "Total games played: " << totalGames << endl;
@@ -368,6 +377,7 @@ void BlackjackGame::initializePlayers(int numPlayers) {
     }
 }
 
+// Rules of the game
 void BlackjackGame::printRules() const {
     cout << "Game Rules:" << endl;
     cout << "- Try to beat the house by getting as close to 21 as possible without going over." << endl;
@@ -377,12 +387,14 @@ void BlackjackGame::printRules() const {
     cout << "- The house draws until it has at least 17." << endl;
 }
 
+// Balance report
 void BlackjackGame::displayBalanceReport() const {
     cout << "Current balance report: $" << balance << endl;
     cout << "Initial balance: $" << initialBalance << endl;
     cout << "Net earnings: $" << balance - initialBalance << endl;
 }
 
+// Details of the game
 void BlackjackGame::logDetailedState() {
     if (log.is_open()) {
         log << "Detailed game state: " << endl;
@@ -402,6 +414,7 @@ void BlackjackGame::logDetailedState() {
     }
 }
 
+// bet placing mechanic
 void BlackjackGame::placeBet(float& bet) {
     cout << "Current balance: $" << fixed << setprecision(2) << balance << endl;
     cout << "Place your bet: ";
@@ -646,11 +659,13 @@ void BlackjackGame::playGame() {
 void BlackjackGame::handleResult(Player& player, Player& house, float& bet, int handIndex) {
     int pScore = player.getScore(handIndex);
     int hScore = house.getScore(0);
+    int result;
     if (pScore > 21) {
         cout << "Player busts! House wins." << endl;
         logResult("Player busts");
         gameHistory[historyCount++] = -1;
         stats.recordResult(-1);
+        result = -1;
     } else if (hScore > 21) {
         cout << "House busts! Player wins this hand!" << endl;
         float winAmount = bet*2;
@@ -659,6 +674,7 @@ void BlackjackGame::handleResult(Player& player, Player& house, float& bet, int 
         logResult("House busts, player wins");
         gameHistory[historyCount++] = 1;
         stats.recordResult(1);
+        result = 1;
     } else if (pScore > hScore) {
         cout << "Player wins this hand!" << endl;
         float winAmount = bet*2;
@@ -667,19 +683,46 @@ void BlackjackGame::handleResult(Player& player, Player& house, float& bet, int 
         logResult("Player wins");
         gameHistory[historyCount++] = 1;
         stats.recordResult(1);
+        result = 1;
     } else if (pScore == hScore) {
         cout << "It's a tie! House wins ties." << endl;
         logResult("Tie goes to dealer");
         gameHistory[historyCount++] = -1;
         stats.recordResult(-1);
+        result = -1; // tie goes to dealer, considered a loss for player
     } else {
         cout << "House wins this hand." << endl;
         logResult("House wins");
         gameHistory[historyCount++] = -1;
         stats.recordResult(-1);
+        result = -1;
+    }
+
+    // Use the hash function on the player's final hand
+    std::string finalHand = player.handToString(handIndex);
+    size_t hval = handHash(finalHand); // hashing the player's final hand
+
+    // This function will hash the player hand and save the performance of the hand along with it
+    // Needs improvements
+    int wins = (result == 1) ? 1 : 0;
+    int losses = ((result == -1) && (pScore != hScore)) ? 1 : 0;
+    int ties = ((pScore == hScore) && (pScore != 0)) ? 1 : 0;
+
+    // Results
+    handPerformance[hval][0] += wins;
+    handPerformance[hval][1] += losses;
+    handPerformance[hval][2] += ties;
+
+    // Log this performance data
+    if (log.is_open()) {
+        log << "Hand Hash: " << hval << " Final Hand: [" << finalHand << "] "
+            << "Wins: " << handPerformance[hval][0] 
+            << ", Losses: " << handPerformance[hval][1]
+            << ", Ties: " << handPerformance[hval][2] << endl;
     }
 }
 
+// Game history
 void BlackjackGame::displayHistory() const {
     cout << "Game History:" << endl;
     for (int i = 0; i < historyCount; ++i) {
@@ -694,6 +737,7 @@ void BlackjackGame::displayHistory() const {
     }
 }
 
+// Save results in a log
 void BlackjackGame::logResult(const std::string& result) {
     if (log.is_open()) {
         log << "Result: " << result << ", Balance: $" << fixed << setprecision(2) << balance << endl;

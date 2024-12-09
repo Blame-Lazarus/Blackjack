@@ -42,10 +42,7 @@ void displayWelcomeMessage() {
     cout << "        Welcome to the Blackjack Game!   " << endl;
     cout << "=========================================" << endl;
     cout << "Rules: The objective is to have a higher hand value than the dealer\n"
-         << "without exceeding 21. You are dealt cards and can choose actions.\n"
-         << "Player Options: Hit (draw another card), Stand (stop drawing),\n"
-         << "Double Down (double your bet, get one card only), Split (if you have a pair).\n"
-         << "If you bust (go over 21), you lose immediately.\n"
+         << "without exceeding 21." << endl
          << "The dealer must hit if under 17. Ties go to the dealer.\n"
          << "Up to three players are allowed.\n"
          << "=========================================" << endl << endl;
@@ -93,5 +90,4 @@ void displayGoodbyeMessage() {
     cout << "=========================================" << endl;
     cout << "      Thank you for playing Blackjack!   " << endl;
     cout << "=========================================" << endl;
-    cout << "We hope you enjoyed the game. Goodbye!" << endl;
 }

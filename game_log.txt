@@ -55,3 +55,10 @@ Result: House wins, Balance: $80.00
 Result: House wins, Balance: $60.00
 Result: House wins, Balance: $60.00
 Result: Player wins, Balance: $120.00
+Result: House busts, player wins, Balance: $140.00
+Result: Player wins, Balance: $160.00
+Result: Tie goes to dealer, Balance: $120.00
+Result: House busts, player wins, Balance: $140.00
+Hand Hash: 17397451893410753723 Final Hand: [1 5 6 ] Wins: 1, Losses: 0, Ties: 0
+Result: Player wins, Balance: $140.00
+Hand Hash: 17882413815517597513 Final Hand: [1 3 5 ] Wins: 1, Losses: 0, Ties: 0
