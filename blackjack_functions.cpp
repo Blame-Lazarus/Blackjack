@@ -12,7 +12,6 @@
 
 using namespace std;
 
-// Utility function to display a single card
 void displayCard(int card) {
     cout << card << " ";
 }
@@ -103,7 +102,7 @@ int recursiveScore(int* arr, int size, int &aces) {
     return cardValue + recursiveScore(arr+1, size-1, aces);
 }
 
-// Merge sort functions for sorting player's hand
+// Merge sort
 static void merge(int* arr, int left, int mid, int right) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
@@ -159,7 +158,6 @@ static void mergeSort(int* arr, int left, int right) {
 }
 
 // Player implementation
-
 Player::Player() {
     score[0] = 0;
     score[1] = 0;
@@ -274,9 +272,8 @@ void Player::showSortedHand(int handIndex) {
 }
 
 std::string Player::handToString(int handIndex) const {
-    int hIndex = 0;
     int sz = 0;
-    int* arr = getHandArray(hIndex, sz);
+    int* arr = getHandArray(handIndex, sz);
     string result;
     for (int i = 0; i < sz; i++) {
         result += std::to_string(arr[i]) + " ";
@@ -305,11 +302,9 @@ bool Player::canSplit(int handIndex) {
 }
 
 void Player::splitHand() {
-    // Split the first hand if it can be split
     if (numberOfHands < 2 && canSplit(0)) {
         int sz = 0;
         int* arr = hand[0].toArray(sz);
-        // arr[0] and arr[1] are the same rank
         hand[0].clear();
         hand[1].clear();
         hand[0].insert(arr[0]);
@@ -356,7 +351,6 @@ void GameStatistics::displayStatistics() const {
 }
 
 // BlackjackGame class
-
 BlackjackGame::BlackjackGame() : balance(100.0), initialBalance(100.0), historyCount(0) {
     gameHistory = new int[100];
     log.open("game_log.txt", ios::app);
@@ -437,7 +431,6 @@ void BlackjackGame::playGame() {
         placeBet(bet);
 
         // Initial deal
-        // Deal two cards to each player
         for (int i = 0; i < numPlayers; ++i) {
             Player& player = players.front();
             player.clearHand();
@@ -452,25 +445,18 @@ void BlackjackGame::playGame() {
             players.pop();
         }
 
-        // Deal to house
         Player house;
         house.addCard(deck.drawCard());
         house.addCard(deck.drawCard());
         cout << "House's ";
         house.showHand(true,0);
 
-        // Player decisions using decision tree
-        // For each player, for each hand:
-        // Possible actions: hit, stand, double, split
-        // Build decision tree according to conditions
-
-        // Since we must allow splitting and doubling, handle that now
+        // Player decisions
         queue<Player> tempQueue;
         for (int i = 0; i < numPlayers; i++) {
             Player player = players.front();
             players.pop();
 
-            // For each player's first hand, check if can split
             bool doneWithHands = false;
             int currentHand = 0;
             while (!doneWithHands) {
@@ -479,33 +465,55 @@ void BlackjackGame::playGame() {
                     break;
                 }
                 int hIndex = currentHand;
-                // Check if canSplit (only at start), canDouble (only at start)
+
                 bool canSplit = false;
                 bool canDouble = false;
 
-                // can split if exactly 2 cards and same rank
                 canSplit = (player.getNumberOfHands() < 2 && player.canSplit(hIndex));
-                // can double if exactly 2 cards and haven't doubled yet
+
                 int sz;
-                {
-                    int* arr = player.getHandArray(hIndex, sz);
-                    delete[] arr;
+                int* arr = player.getHandArray(hIndex, sz);
+                
+                // Calculate total and aces to decide on double down conditions
+                int acesCount = 0;
+                int totalVal = 0;
+                for (int idx = 0; idx < sz; idx++) {
+                    int val = arr[idx];
+                    if (val == 1) {
+                        acesCount++;
+                        val = 11;
+                    } else if (val > 10) {
+                        val = 10;
+                    }
+                    totalVal += val;
                 }
-                if (sz == 2 && !player.isDoubledDown(hIndex)) {
-                    canDouble = true;
+                while (totalVal > 21 && acesCount > 0) {
+                    totalVal -= 10;
+                    acesCount--;
                 }
 
-                // Build decision tree for player
+                // Double down conditions:
+                // Double if total 9,10,11 with no ace
+                // or total 16,17,18 with an ace
+                bool allowDouble = false;
+                if (sz == 2 && !player.isDoubledDown(hIndex)) {
+                    if ((acesCount == 0 && (totalVal == 9 || totalVal == 10 || totalVal == 11)) ||
+                        (acesCount > 0 && (totalVal == 16 || totalVal == 17 || totalVal == 18))) {
+                        allowDouble = true;
+                    }
+                }
+
+                delete[] arr;
+                canDouble = allowDouble;
+
                 DecisionNode* head = DecisionTree::buildPlayerDecisionTree(canSplit, canDouble);
 
                 bool turnOver = false;
                 while (!turnOver && player.getScore(hIndex) <= 21) {
-                    // Display current hand
                     cout << "Player's hand " << (hIndex+1) << ":" << endl;
                     player.showHand(false,hIndex);
                     cout << "Available actions:" << endl;
 
-                    // Print actions
                     DecisionNode* temp = head;
                     int actionCount = 0;
                     while (temp) {
@@ -521,13 +529,11 @@ void BlackjackGame::playGame() {
                     cout << "Choose an action (1-" << actionCount << "): ";
                     int choice;
                     cin >> choice;
-                    // Validate choice
                     if (choice < 1 || choice > actionCount) {
                         cout << "Invalid choice. Try again." << endl;
                         continue;
                     }
 
-                    // Get the chosen action
                     temp = head;
                     for (int c = 1; c < choice; c++) {
                         temp = temp->next;
@@ -554,7 +560,6 @@ void BlackjackGame::playGame() {
                     } else if (chosenAction == ACTION_STAND) {
                         turnOver = true;
                     } else if (chosenAction == ACTION_DOUBLE) {
-                        // Double bet, draw one card only
                         if (balance >= bet) {
                             balance -= bet;
                             bet = bet * 2;
@@ -577,13 +582,8 @@ void BlackjackGame::playGame() {
                             cout << "Not enough balance to double down! Action not taken." << endl;
                         }
                     } else if (chosenAction == ACTION_SPLIT) {
-                        // Split into two hands
                         player.splitHand();
                         cout << "Player splits the hand into two hands!" << endl;
-                        // After splitting, deal one card to each hand to continue
-                        // Actually in traditional blackjack, after splitting Aces, only one card is dealt, but we won't complicate too much.
-                        // Let's just continue normal. Player will have two separate hands now.
-                        // We end turnOver = true here to re-run logic for the new hands if needed.
                         turnOver = true;
                     }
                 }
@@ -591,7 +591,6 @@ void BlackjackGame::playGame() {
                 DecisionTree::destroyTree(head);
                 currentHand++;
                 if (player.getNumberOfHands() == 1 && currentHand == 1) {
-                    // No more hands to process
                     doneWithHands = true;
                 }
                 else if (player.getNumberOfHands() == 2 && currentHand == 2) {
@@ -601,18 +600,14 @@ void BlackjackGame::playGame() {
             tempQueue.push(player);
         }
 
-        players = tempQueue; // update players queue
+        players = tempQueue;
 
         cout << "House reveals second card." << endl;
         house.showHand(false,0);
-        // House decision tree:
-        // If < 17: hit, else stand
+
         bool houseTurn = true;
         while (houseTurn && house.getScore(0) < 21) {
             DecisionNode* hTree = DecisionTree::buildHouseDecisionTree(house.getScore(0));
-            // House auto-decides:
-            // If houseScore < 17 -> hit
-            // Else stand
             if (hTree->action == ACTION_HIT) {
                 int card = deck.drawCard();
                 house.addCard(card,0);
@@ -624,23 +619,16 @@ void BlackjackGame::playGame() {
                 }
                 house.showHand(false,0);
             } else {
-                // stand
                 houseTurn = false;
             }
             DecisionTree::destroyTree(hTree);
             if (house.getScore(0) >= 17) houseTurn = false;
         }
 
-        // Final results:
-        // Compare each player's hand to the house
-        // If player bust >21, player loses
-        // If house busts, player wins
-        // If tie, dealer wins
         queue<Player> finalPlayers = players;
         while (!finalPlayers.empty()) {
             Player player = finalPlayers.front();
             finalPlayers.pop();
-            // Evaluate each of player's hands
             for (int h = 0; h < player.getNumberOfHands(); h++) {
                 handleResult(player, house, bet, h);
             }
@@ -685,9 +673,6 @@ void BlackjackGame::handleResult(Player& player, Player& house, float& bet, int 
         stats.recordResult(1);
     } else if (pScore == hScore) {
         cout << "It's a tie! House wins ties." << endl;
-        // Player gets only their bet back?
-        // Original says ties go to dealer - means player loses.
-        // Let's interpret "Ties go to the dealer" as dealer wins ties.
         logResult("Tie goes to dealer");
         gameHistory[historyCount++] = -1;
         stats.recordResult(-1);
@@ -720,4 +705,3 @@ void BlackjackGame::logResult(const std::string& result) {
         cerr << "Error: Log file is not open." << endl;
     }
 }
-

@@ -241,21 +241,18 @@ public:
 };
 
 // Player class
-// Modified to allow splitting (up to 2 hands), doubling down, etc.
-// We will store up to 2 hands in arrays of AVLTree.
-// The first hand is always hand[0]. If split happens, hand[1] is used.
 class Player {
 private:
     AVLTree hand[2];
     int score[2];
     bool activeHands[2];
-    bool doubledDown[2]; // track if a hand is doubled down
+    bool doubledDown[2]; 
     int numberOfHands;
 
 public:
-            int* getHandArray(int handIndex, int &sz) const {
-    return hand[handIndex].toArray(sz);
-}
+    int* getHandArray(int handIndex, int &sz) const {
+        return hand[handIndex].toArray(sz);
+    }
 
     Player();
     ~Player() = default;
@@ -290,11 +287,7 @@ public:
     void displayStatistics() const;
 };
 
-// Decision Tree for game states
-// We will create a small decision tree structure for actions: hit, stand, double, split
-// Each node represents a decision state. Children represent possible actions from that state.
-// No vectors, just pointers. We will build and destroy these trees on the fly.
-// Reference: conceptual structure inspired by poker game tree (upswingpoker.com)
+// Decision Tree
 enum ActionType {
     ACTION_STAND,
     ACTION_HIT,
@@ -310,21 +303,7 @@ struct DecisionNode {
 
 class DecisionTree {
 public:
-    // Build a decision tree based on current player's hand situation.
-    // The tree will be a simple linked structure of possible actions:
-    // For simplicity, we link them as a chain. The player can choose from these actions.
-    // We do not use arrays or vectors, we just build a linked list of possible actions.
-
-    // If canSplit: add split option
-    // If canDouble: add double option
-    // Always add hit and stand options
-    // Return head of linked structure
-
     static DecisionNode* buildPlayerDecisionTree(bool canSplit, bool canDouble) {
-        // We'll create a chain of actions
-        // Order: Hit -> Stand -> Double -> Split (if applicable)
-        // The player will be able to navigate or choose from these.
-        // No arrays, just pointers.
         DecisionNode* head = nullptr;
         DecisionNode* tail = nullptr;
 
@@ -354,9 +333,6 @@ public:
         return head;
     }
 
-    // For the house, the decision is simpler:
-    // If score < 17: Hit
-    // Else: Stand
     static DecisionNode* buildHouseDecisionTree(int houseScore) {
         DecisionNode* head = nullptr;
         DecisionNode* tail = nullptr;
@@ -382,7 +358,7 @@ public:
     }
 };
 
-// Class managing game
+// Game class
 class BlackjackGame {
 private:
     float balance;
