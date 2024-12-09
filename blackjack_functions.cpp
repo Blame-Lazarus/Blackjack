@@ -4,15 +4,16 @@
  * Purpose: Blackjack Game Project
  */
 
+// blackjack_functions.cpp
 #include "blackjack.h"
 #include <iostream>
-#include <algorithm> // for random_shuffle, sort
+#include <algorithm> // for sort
 #include <ctime>
 #include <cstring>   // strcpy and sprintf
 
 using namespace std;
 
-// Utility function for displaying cards
+// Utility function
 void displayCard(int card) {
     cout << card << " ";
 }
@@ -27,20 +28,17 @@ void displayCardGraphic(int card) {
 
 // Function to generate the ASCII art for a card
 void getCardGraphic(int card, char cardLines[6][7]) {
-    // Initialize card lines with spaces and null terminators
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 6; ++j) {
             cardLines[i][j] = ' ';
         }
-        cardLines[i][6] = '\0'; // Null terminator
+        cardLines[i][6] = '\0';
     }
 
-    // Top and bottom borders
     strcpy(cardLines[0], "+-----+");
     strcpy(cardLines[5], "+-----+");
 
-    // Map card number to rank
-    char rankStr[3]; // Maximum of 2 characters plus null terminator
+    char rankStr[3];
     if (card == 1) {
         strcpy(rankStr, "A");
     } else if (card == 11) {
@@ -73,13 +71,11 @@ void getCardGraphic(int card, char cardLines[6][7]) {
         cardLines[4][5] = '|';
     }
 
-    // Set the vertical borders
     cardLines[2][0] = '|';
     cardLines[2][5] = '|';
     cardLines[3][0] = '|';
     cardLines[3][5] = '|';
 
-    // Ensure null terminators are set
     for (int i = 0; i < 6; ++i) {
         cardLines[i][6] = '\0';
     }
@@ -95,90 +91,7 @@ void getHiddenCardGraphic(char cardLines[6][7]) {
     strcpy(cardLines[5], "+-----+");
 }
 
-// CardDeck class implementation
-
-CardDeck::CardDeck() {
-    srand(static_cast<unsigned int>(time(0))); // Seed the random number generator
-    initializeDeck();
-}
-
-// Initialize the deck and reset card counts
-void CardDeck::initializeDeck() {
-    cardCounts.clear();
-    for (int i = 1; i <= 13; i++) {
-        cardCounts[i] = 28; // 28 cards of each rank in a 7-deck set
-    }
-    usedCards.clear();
-    while (!returnedCards.empty()) {
-        returnedCards.pop();
-    }
-
-    // Populate the deck array for shuffling
-    int index = 0;
-    for (int i = 1; i <= 13; ++i) {
-        for (int j = 0; j < 28; ++j) {
-            deckArray[index++] = i;
-        }
-    }
-    shuffleDeck();
-}
-
-void CardDeck::shuffleDeck() {
-    cout << "Shuffling the deck with std::random_shuffle..." << endl;
-    random_shuffle(deckArray, deckArray + 364);
-}
-
-int CardDeck::drawCard() {
-    if (needsReshuffling()) {
-        reshuffleDeck();
-    }
-
-    int card;
-    do {
-        card = rand() % 13 + 1; // Random card between 1 and 13
-    } while (cardCounts[card] == 0); // Ensure card is available
-
-    cardCounts[card]--;
-    usedCards.insert(card);
-    return card; // Return the card number (1-13)
-}
-
-bool CardDeck::needsReshuffling() const {
-    int totalCardsUsed = 0;
-    for (const auto& p : cardCounts) {
-        totalCardsUsed += (28 - p.second);
-    }
-    return totalCardsUsed >= (52 * 7 * 3 / 4);
-}
-
-void CardDeck::reshuffleDeck() {
-    cout << "Reshuffling the deck..." << endl;
-    while (!returnedCards.empty()) {
-        int card = returnedCards.top();
-        cardCounts[card]++;
-        returnedCards.pop();
-    }
-    initializeDeck();
-    shuffleDeck();
-}
-
-void CardDeck::returnCard(int card) {
-    returnedCards.push(card);
-}
-
-void CardDeck::printCardCounts() const {
-    cout << "Current card counts:" << endl;
-    for (const auto& pair : cardCounts) {
-        cout << "Card " << pair.first << ": " << pair.second << endl;
-    }
-}
-
-void CardDeck::displayDeckStatus() const {
-    cout << "Deck status:" << endl;
-    cout << "Total unique cards used: " << usedCards.size() << endl;
-}
-
-// Player class implementation
+// Player implementation
 
 Player::Player() : score(0) {}
 
@@ -187,23 +100,26 @@ void Player::addCard(int card) {
     score = calculateScore();
 }
 
+int recursiveScore(int* arr, int size, int &aces) {
+    if (size == 0) return 0;
+    int card = arr[0];
+    int cardValue;
+    if (card > 10) {
+        cardValue = 10;
+    } else if (card == 1) {
+        cardValue = 11;
+        aces++;
+    } else {
+        cardValue = card;
+    }
+    return cardValue + recursiveScore(arr+1, size-1, aces);
+}
+
 int Player::calculateScore() {
     int sz = 0;
     int* arr = hand.toArray(sz);
-    int total = 0, aces = 0;
-    for (int i = 0; i < sz; i++) {
-        int card = arr[i];
-        int cardValue;
-        if (card > 10) {
-            cardValue = 10;
-        } else if (card == 1) {
-            cardValue = 11;
-            aces++;
-        } else {
-            cardValue = card;
-        }
-        total += cardValue;
-    }
+    int aces = 0;
+    int total = recursiveScore(arr, sz, aces);
     while (total > 21 && aces > 0) {
         total -= 10;
         aces--;
@@ -256,14 +172,7 @@ void Player::clearHand() {
     score = 0;
 }
 
-void Player::sortHand() {
-    // AVL tree is always maintained in a balanced, but we used insertion order.
-    // The actual "sorting" is intrinsic since we can access it in sorted order via toArray().
-    // No action needed here.
-}
-
 void Player::showSortedHand() {
-    // The hand is obtained in sorted order from toArray().
     int sz = 0;
     int* arr = hand.toArray(sz);
 
@@ -291,11 +200,15 @@ std::string Player::handToString() const {
     int* arr = (const_cast<AVLTree*>(&hand))->toArray(sz);
     string result;
     for (int i = 0; i < sz; i++) {
-        result += to_string(arr[i]) + " ";
+        result += std::to_string(arr[i]) + " ";
     }
     delete[] arr;
     return result;
 }
+void Player::sortHand() {
+    // Deleted
+}
+
 
 // Statistics
 
@@ -326,7 +239,7 @@ void GameStatistics::displayStatistics() const {
 // BlackjackGame class
 
 BlackjackGame::BlackjackGame() : balance(100.0), initialBalance(100.0), historyCount(0) {
-    gameHistory = new int[100]; // Array to store game outcomes
+    gameHistory = new int[100];
     log.open("game_log.txt", ios::app);
 }
 
@@ -511,7 +424,7 @@ void BlackjackGame::displayHistory() const {
     }
 }
 
-void BlackjackGame::logResult(const string& result) {
+void BlackjackGame::logResult(const std::string& result) {
     if (log.is_open()) {
         log << "Result: " << result << ", Balance: $" << fixed << setprecision(2) << balance << endl;
     } else {

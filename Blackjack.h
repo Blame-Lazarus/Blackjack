@@ -4,6 +4,7 @@
  * Purpose: Blackjack Game Project
  */
 
+// blackjack.h
 #ifndef BLACKJACK_H
 #define BLACKJACK_H
 
@@ -14,12 +15,14 @@
 #include <set>       // Set
 #include <stack>     // Stack
 #include <queue>     // Queue for players
-#include <algorithm> // For random_shuffle, sort
+#include <algorithm> // For sort (used previously), not for random_shuffle now
 #include <cstdlib>
 #include <ctime>     // Time
 #include <cstring>   // For strcpy
 #include <iostream>
 #include <string>
+
+using namespace std;
 
 // Utility functions for displaying cards
 void getCardGraphic(int card, char cardLines[6][7]);
@@ -151,24 +154,95 @@ private:
     std::stack<int> returnedCards; // Stack
     int deckArray[364];            // Array representing the complete deck
 
-    // Initializes the deck array and card counts
-    void initializeDeck();
-    // Reshuffles the deck when needed
-    void reshuffleDeck();
+    void initializeDeck() {
+        cardCounts.clear();
+        for (int i = 1; i <= 13; i++) {
+            cardCounts[i] = 28; // 28 cards of each rank in a 7-deck set
+        }
+        while (!returnedCards.empty()) {
+            returnedCards.pop();
+        }
+        usedCards.clear();
+
+        int index = 0;
+        for (int i = 1; i <= 13; ++i) {
+            for (int j = 0; j < 28; ++j) {
+                deckArray[index++] = i;
+            }
+        }
+        // Use recursive shuffle instead of random_shuffle
+        recursiveShuffleDeck(deckArray, 364);
+    }
+
+    void recursiveShuffleDeck(int arr[], int n) {
+        if (n <= 1) return;
+        int r = rand() % n;
+        int temp = arr[r];
+        arr[r] = arr[n - 1];
+        arr[n - 1] = temp;
+        recursiveShuffleDeck(arr, n - 1);
+    }
+
+    void reshuffleDeck() {
+        while (!returnedCards.empty()) {
+            int card = returnedCards.top();
+            cardCounts[card]++;
+            returnedCards.pop();
+        }
+        initializeDeck();
+        // Already recursively shuffled in initializeDeck
+    }
 
 public:
-    CardDeck();
-    // Shuffles the deck using random_shuffle
-    void shuffleDeck();
-    // Draws a card and returns its value (1-11)
-    int drawCard();
-    // Checks if the deck needs reshuffling (after 3/4 usage)
-    bool needsReshuffling() const;
-    // Returns a card to the discard stack
-    void returnCard(int card);
-    // Prints the current card counts
-    void printCardCounts() const;
-    void displayDeckStatus() const;
+    CardDeck() {
+        srand(static_cast<unsigned int>(time(0)));
+        initializeDeck();
+    }
+
+    void shuffleDeck() {
+        // Replaced with recursion
+        recursiveShuffleDeck(deckArray, 364);
+        cout << "Shuffling the deck with recursion..." << endl;
+    }
+
+    int drawCard() {
+        if (needsReshuffling()) {
+            cout << "Reshuffling the deck..." << endl;
+            reshuffleDeck();
+        }
+        int card;
+        do {
+            card = deckArray[rand() % 364]; 
+        } while (cardCounts[card] == 0); 
+        cardCounts[card]--;
+        usedCards.insert(card);
+        return card;
+    }
+
+    bool needsReshuffling() const {
+        int totalCardsUsed = 0;
+        for (std::map<int,int>::const_iterator it = cardCounts.begin(); it != cardCounts.end(); ++it) {
+            totalCardsUsed += (28 - it->second);
+        }
+        return totalCardsUsed >= (52 * 7 * 3 / 4);
+    }
+
+    void returnCard(int card) {
+        returnedCards.push(card);
+    }
+
+    void printCardCounts() const {
+        std::map<int,int>::const_iterator it = cardCounts.begin();
+        cout << "Current card counts:" << endl;
+        for (; it != cardCounts.end(); ++it) {
+            cout << "Card " << it->first << ": " << it->second << endl;
+        }
+    }
+
+    void displayDeckStatus() const {
+        cout << "Deck status:" << endl;
+        cout << "Total unique cards used: " << (int)usedCards.size() << endl;
+    }
 };
 
 // Class representing a player
@@ -180,20 +254,13 @@ private:
 public:
     Player();
     ~Player() = default;
-    // Adds a card
     void addCard(int card);
-    int calculateScore();
-    // Checks if the player has a blackjack
+    int calculateScore(); // Will be changed to recursion in blackjack_functions.cpp
     bool hasBlackjack();
-    // Shows the player's hand
     void showHand(bool hideFirstCard = false);
-    // Returns the player's current score
     int getScore() const;
-    // Clears the player's hand
     void clearHand();
-    // Sorts the player's hand
     void sortHand();
-    // Displays the sorted hand
     void showSortedHand();
     std::string handToString() const;
 };
@@ -208,33 +275,29 @@ private:
 
 public:
     GameStatistics();
-    void recordResult(int result); // 1 for player win, -1 for house win, 0 for tie
+    void recordResult(int result);
     void displayStatistics() const;
 };
 
 // Class managing game
 class BlackjackGame {
 private:
-    float balance;             // Player's current balance
-    float initialBalance;      // Initial balance
+    float balance;
+    float initialBalance;
     int* gameHistory;
     int historyCount;
     CardDeck deck;
-    std::ofstream log;         // Log file for game results
-    std::queue<Player> players;     // Queue
+    std::ofstream log;
+    std::queue<Player> players;
     GameStatistics stats;
 
-    // Logs a detailed report
     void logDetailedState();
 
 public:
-    // constructor
     BlackjackGame();
-    // destructor
     ~BlackjackGame();
     void playGame();
     void displayHistory() const;
-    //log results in a file
     void logResult(const std::string& result);
     void placeBet(float& bet);
     void handleResult(Player& player, Player& house, float& bet);

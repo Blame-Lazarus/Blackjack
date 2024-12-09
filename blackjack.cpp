@@ -12,34 +12,33 @@
 // namespace
 using namespace std;
 
-// Function declarations for utility display
+// Function declarations (Utility)
 void displayWelcomeMessage();
 void displayGameMenu();
 void displayGoodbyeMessage();
 
-// Main function execution begins here!
+// Main
 int main() {
-    // Set a random number seed
     srand(static_cast<unsigned int>(time(0))); // Seed for random number generation
 
-    // Display welcome message and rules
+    // Welcome
     displayWelcomeMessage();
 
-    // Display the game menu
+    // Game menu
     displayGameMenu();
 
-    // Start the Blackjack game
+    // Start
     BlackjackGame game;
     game.playGame();
 
-    // Display goodbye message
+    // Goodbye message
     displayGoodbyeMessage();
 
-    // Finish game
+    // Exit
     return 0;
 }
 
-// Function to display a welcome message
+// Welcome message
 void displayWelcomeMessage() {
     cout << "=========================================" << endl;
     cout << "        Welcome to the Blackjack Game!   " << endl;
@@ -53,7 +52,7 @@ void displayWelcomeMessage() {
          << "=========================================" << endl << endl;
 }
 
-// Function to display a game menu with options
+// Menu with options
 void displayGameMenu() {
     cout << "Game Options:" << endl;
     cout << "1. Start a new game" << endl;
