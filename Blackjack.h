@@ -38,8 +38,9 @@ private:
         Node(int k) : key(k), left(nullptr), right(nullptr), height(1) {}
     };
 
-    Node* root;
+    Node* root; // Root of the tree
 
+    //Node inserting
     Node* insertNode(Node* node, int key) {
         if (!node) return new Node(key);
         if (key < node->key) {
@@ -52,12 +53,14 @@ private:
         return balance(node);
     }
 
+    // Height update
     void updateHeight(Node* node) {
         int hl = (node->left ? node->left->height : 0);
         int hr = (node->right ? node->right->height : 0);
         node->height = (hl > hr ? hl : hr) + 1;
     }
 
+    // Balancing factor
     int getBalanceFactor(Node* node) {
         if (!node) return 0;
         int hl = (node->left ? node->left->height : 0);
@@ -65,6 +68,7 @@ private:
         return hl - hr;
     }
 
+    // Rotation right
     Node* rotateRight(Node* y) {
         Node* x = y->left;
         Node* T2 = x->right;
@@ -74,7 +78,8 @@ private:
         updateHeight(x);
         return x;
     }
-
+    
+    // Rotation left
     Node* rotateLeft(Node* x) {
         Node* y = x->right;
         Node* T2 = y->left;
@@ -101,6 +106,7 @@ private:
         return node;
     }
 
+    // Clear node
     void clearNode(Node* node) {
         if (!node) return;
         clearNode(node->left);
@@ -121,6 +127,8 @@ private:
     }
 
 public:
+            
+    // More member functions
     AVLTree() : root(nullptr) {}
 
     void insert(int key) {
@@ -169,10 +177,11 @@ private:
                 deckArray[index++] = i;
             }
         }
-        // Recursive shuffle
+        // Recursive shuffle function call
         recursiveShuffleDeck(deckArray, 364);
     }
 
+    // Recursive shuffle function
     void recursiveShuffleDeck(int arr[], int n) {
         if (n <= 1) return;
         int r = rand() % n;
@@ -202,6 +211,7 @@ public:
         cout << "Shuffling the deck with recursion..." << endl;
     }
 
+    // Card drawing
     int drawCard() {
         if (needsReshuffling()) {
             cout << "Reshuffling the deck..." << endl;
@@ -216,6 +226,7 @@ public:
         return card;
     }
 
+    // Function which checks the total number of cards used to determine if the deck needs reshuffling
     bool needsReshuffling() const {
         int totalCardsUsed = 0;
         for (std::map<int,int>::const_iterator it = cardCounts.begin(); it != cardCounts.end(); ++it) {

@@ -67,6 +67,7 @@ void displayGameMenu() {
             cout << "Starting a new game..." << endl << endl;
             break;
         case 2:
+            // Game rules
             cout << "=========================================" << endl;
             cout << "              Game Rules                " << endl;
             cout << "=========================================" << endl;
@@ -80,12 +81,13 @@ void displayGameMenu() {
             cout << "Exiting the game. See you next time!" << endl;
             exit(0);
         default:
+            // In case of invalid choice, default game settings
             cout << "Invalid choice. Starting a new game by default." << endl << endl;
             break;
     }
 }
 
-// Function to display a goodbye message
+// Goodbye message
 void displayGoodbyeMessage() {
     cout << "=========================================" << endl;
     cout << "      Thank you for playing Blackjack!   " << endl;
