@@ -10,14 +10,14 @@
 // System Libraries
 #include <fstream>
 #include <iomanip>
-#include <map>       // Map
-#include <set>       // Set
-#include <stack>     // Stack
-#include <queue>     // Queue for players
+#include <map>
+#include <set>
+#include <stack>
+#include <queue>
 #include <algorithm>
 #include <cstdlib>
-#include <ctime>     // Time
-#include <cstring>   // strcpy
+#include <ctime>
+#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -38,9 +38,8 @@ private:
         Node(int k) : key(k), left(nullptr), right(nullptr), height(1) {}
     };
 
-    Node* root; // Root of the tree
+    Node* root;
 
-    //Node inserting
     Node* insertNode(Node* node, int key) {
         if (!node) return new Node(key);
         if (key < node->key) {
@@ -48,19 +47,16 @@ private:
         } else {
             node->right = insertNode(node->right, key);
         }
-
         updateHeight(node);
         return balance(node);
     }
 
-    // Height update
     void updateHeight(Node* node) {
         int hl = (node->left ? node->left->height : 0);
         int hr = (node->right ? node->right->height : 0);
         node->height = (hl > hr ? hl : hr) + 1;
     }
 
-    // Balancing factor
     int getBalanceFactor(Node* node) {
         if (!node) return 0;
         int hl = (node->left ? node->left->height : 0);
@@ -68,7 +64,6 @@ private:
         return hl - hr;
     }
 
-    // Rotation right
     Node* rotateRight(Node* y) {
         Node* x = y->left;
         Node* T2 = x->right;
@@ -78,8 +73,7 @@ private:
         updateHeight(x);
         return x;
     }
-    
-    // Rotation left
+
     Node* rotateLeft(Node* x) {
         Node* y = x->right;
         Node* T2 = y->left;
@@ -106,7 +100,6 @@ private:
         return node;
     }
 
-    // Clear node
     void clearNode(Node* node) {
         if (!node) return;
         clearNode(node->left);
@@ -127,8 +120,6 @@ private:
     }
 
 public:
-            
-    // More member functions
     AVLTree() : root(nullptr) {}
 
     void insert(int key) {
@@ -156,15 +147,15 @@ public:
 // Class for deck of cards
 class CardDeck {
 private:
-    std::map<int, int> cardCounts; // Map
-    std::set<int> usedCards;       // Set
-    std::stack<int> returnedCards; // Stack
-    int deckArray[364];            // Array representing the complete deck
+    std::map<int, int> cardCounts;
+    std::set<int> usedCards;
+    std::stack<int> returnedCards;
+    int deckArray[364];
 
     void initializeDeck() {
         cardCounts.clear();
         for (int i = 1; i <= 13; i++) {
-            cardCounts[i] = 28; // 28 cards of each rank in a 7-deck set
+            cardCounts[i] = 28;
         }
         while (!returnedCards.empty()) {
             returnedCards.pop();
@@ -177,11 +168,9 @@ private:
                 deckArray[index++] = i;
             }
         }
-        // Recursive shuffle function call
         recursiveShuffleDeck(deckArray, 364);
     }
 
-    // Recursive shuffle function
     void recursiveShuffleDeck(int arr[], int n) {
         if (n <= 1) return;
         int r = rand() % n;
@@ -211,7 +200,6 @@ public:
         cout << "Shuffling the deck with recursion..." << endl;
     }
 
-    // Card drawing
     int drawCard() {
         if (needsReshuffling()) {
             cout << "Reshuffling the deck..." << endl;
@@ -220,13 +208,12 @@ public:
         int card;
         do {
             card = deckArray[rand() % 364]; 
-        } while (cardCounts[card] == 0); 
+        } while (cardCounts[card] == 0);
         cardCounts[card]--;
         usedCards.insert(card);
         return card;
     }
 
-    // Function which checks the total number of cards used to determine if the deck needs reshuffling
     bool needsReshuffling() const {
         int totalCardsUsed = 0;
         for (std::map<int,int>::const_iterator it = cardCounts.begin(); it != cardCounts.end(); ++it) {
@@ -254,26 +241,42 @@ public:
 };
 
 // Player class
+// Modified to allow splitting (up to 2 hands), doubling down, etc.
+// We will store up to 2 hands in arrays of AVLTree.
+// The first hand is always hand[0]. If split happens, hand[1] is used.
 class Player {
 private:
-    AVLTree hand;
-    int score;
+    AVLTree hand[2];
+    int score[2];
+    bool activeHands[2];
+    bool doubledDown[2]; // track if a hand is doubled down
+    int numberOfHands;
 
 public:
+            int* getHandArray(int handIndex, int &sz) const {
+    return hand[handIndex].toArray(sz);
+}
+
     Player();
     ~Player() = default;
-    void addCard(int card);
-    int calculateScore();
-    bool hasBlackjack();
-    void showHand(bool hideFirstCard = false);
-    int getScore() const;
+    void addCard(int card, int handIndex=0);
+    int calculateScore(int handIndex=0);
+    bool hasBlackjack(int handIndex=0);
+    void showHand(bool hideFirstCard = false, int handIndex=0);
+    int getScore(int handIndex=0) const;
     void clearHand();
-    void sortHand();
-    void showSortedHand();
-    std::string handToString() const;
+    void sortHand(int handIndex=0);
+    void showSortedHand(int handIndex=0);
+    std::string handToString(int handIndex=0) const;
+    int getNumberOfHands() const;
+    void setNumberOfHands(int n);
+    bool canSplit(int handIndex=0);
+    void splitHand();
+    void setDoubledDown(int handIndex, bool value);
+    bool isDoubledDown(int handIndex) const;
 };
 
-// Game statistics class
+// Game statistics
 class GameStatistics {
 private:
     int totalGames;
@@ -285,6 +288,98 @@ public:
     GameStatistics();
     void recordResult(int result);
     void displayStatistics() const;
+};
+
+// Decision Tree for game states
+// We will create a small decision tree structure for actions: hit, stand, double, split
+// Each node represents a decision state. Children represent possible actions from that state.
+// No vectors, just pointers. We will build and destroy these trees on the fly.
+// Reference: conceptual structure inspired by poker game tree (upswingpoker.com)
+enum ActionType {
+    ACTION_STAND,
+    ACTION_HIT,
+    ACTION_DOUBLE,
+    ACTION_SPLIT
+};
+
+struct DecisionNode {
+    ActionType action;
+    DecisionNode* next;
+    DecisionNode(ActionType a) : action(a), next(nullptr) {}
+};
+
+class DecisionTree {
+public:
+    // Build a decision tree based on current player's hand situation.
+    // The tree will be a simple linked structure of possible actions:
+    // For simplicity, we link them as a chain. The player can choose from these actions.
+    // We do not use arrays or vectors, we just build a linked list of possible actions.
+
+    // If canSplit: add split option
+    // If canDouble: add double option
+    // Always add hit and stand options
+    // Return head of linked structure
+
+    static DecisionNode* buildPlayerDecisionTree(bool canSplit, bool canDouble) {
+        // We'll create a chain of actions
+        // Order: Hit -> Stand -> Double -> Split (if applicable)
+        // The player will be able to navigate or choose from these.
+        // No arrays, just pointers.
+        DecisionNode* head = nullptr;
+        DecisionNode* tail = nullptr;
+
+        // Hit
+        {
+            DecisionNode* node = new DecisionNode(ACTION_HIT);
+            if (!head) head = node; else tail->next = node;
+            tail = node;
+        }
+        // Stand
+        {
+            DecisionNode* node = new DecisionNode(ACTION_STAND);
+            tail->next = node;
+            tail = node;
+        }
+        if (canDouble) {
+            DecisionNode* node = new DecisionNode(ACTION_DOUBLE);
+            tail->next = node;
+            tail = node;
+        }
+        if (canSplit) {
+            DecisionNode* node = new DecisionNode(ACTION_SPLIT);
+            tail->next = node;
+            tail = node;
+        }
+
+        return head;
+    }
+
+    // For the house, the decision is simpler:
+    // If score < 17: Hit
+    // Else: Stand
+    static DecisionNode* buildHouseDecisionTree(int houseScore) {
+        DecisionNode* head = nullptr;
+        DecisionNode* tail = nullptr;
+
+        if (houseScore < 17) {
+            DecisionNode* node = new DecisionNode(ACTION_HIT);
+            head = node;
+            tail = node;
+        } else {
+            DecisionNode* node = new DecisionNode(ACTION_STAND);
+            if (!head) head = node; else tail->next = node;
+            tail = node;
+        }
+        return head;
+    }
+
+    static void destroyTree(DecisionNode* head) {
+        while (head) {
+            DecisionNode* temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
 };
 
 // Class managing game
@@ -308,7 +403,7 @@ public:
     void displayHistory() const;
     void logResult(const std::string& result);
     void placeBet(float& bet);
-    void handleResult(Player& player, Player& house, float& bet);
+    void handleResult(Player& player, Player& house, float& bet, int handIndex);
     void initializePlayers(int numPlayers);
     void printRules() const;
     void displayBalanceReport() const;

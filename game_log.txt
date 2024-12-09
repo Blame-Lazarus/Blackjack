@@ -39,3 +39,6 @@ Result: Player busts, Balance: $50.00
 Result: House wins, Balance: $0.00
 Result: House wins, Balance: $50.00
 Result: Tie, Balance: $50.00
+Result: Player busts, Balance: $0.00
+Result: Player busts, Balance: $0.00
+Result: Player wins, Balance: $140.00

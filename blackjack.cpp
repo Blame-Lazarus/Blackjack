@@ -9,50 +9,40 @@
 #include <iostream>
 #include <ctime>
 
-// namespace
 using namespace std;
 
-// Function declarations (Utility)
 void displayWelcomeMessage();
 void displayGameMenu();
 void displayGoodbyeMessage();
 
-// Main
 int main() {
     srand(static_cast<unsigned int>(time(0))); // Seed for random number generation
 
-    // Welcome
     displayWelcomeMessage();
-
-    // Game menu
     displayGameMenu();
 
-    // Start
     BlackjackGame game;
     game.playGame();
 
-    // Goodbye message
     displayGoodbyeMessage();
 
-    // Exit
     return 0;
 }
 
-// Welcome message
 void displayWelcomeMessage() {
     cout << "=========================================" << endl;
     cout << "        Welcome to the Blackjack Game!   " << endl;
     cout << "=========================================" << endl;
     cout << "Rules: The objective is to have a higher hand value than the dealer\n"
-         << "without exceeding 21. You are initially dealt two cards and can choose\n"
-         << "to 'hit' (receive an additional card) or 'stand' (keep your current hand).\n"
-         << "If your hand exceeds 21, you 'bust' and lose the game.\n"
-         << "The dealer must hit if their total is under 17. Ties go to the dealer.\n"
-         << "This game allows up to three players.\n"
+         << "without exceeding 21. You are dealt cards and can choose actions.\n"
+         << "Player Options: Hit (draw another card), Stand (stop drawing),\n"
+         << "Double Down (double your bet, get one card only), Split (if you have a pair).\n"
+         << "If you bust (go over 21), you lose immediately.\n"
+         << "The dealer must hit if under 17. Ties go to the dealer.\n"
+         << "Up to three players are allowed.\n"
          << "=========================================" << endl << endl;
 }
 
-// Menu with options
 void displayGameMenu() {
     cout << "Game Options:" << endl;
     cout << "1. Start a new game" << endl;
@@ -67,27 +57,26 @@ void displayGameMenu() {
             cout << "Starting a new game..." << endl << endl;
             break;
         case 2:
-            // Game rules
             cout << "=========================================" << endl;
             cout << "              Game Rules                " << endl;
             cout << "=========================================" << endl;
-            cout << "- Try to beat the house by getting as close to 21 as possible without going over." << endl;
-            cout << "- Aces count as 1 or 11, face cards as 10, and cards 2-10 are face value." << endl;
-            cout << "- Place your bets before each round begins." << endl;
-            cout << "- Up to 3 players can join each game." << endl;
-            cout << "=========================================" << endl << endl;
+            cout << "- Try to beat the house by getting as close to 21 as possible without going over.\n"
+                 << "- Aces count as 1 or 11, face cards as 10, and cards 2-10 are face value.\n"
+                 << "- Place your bets before each round.\n"
+                 << "- You can double down on your initial two-card hand.\n"
+                 << "- You can split if your initial two cards have the same rank, forming two separate hands.\n"
+                 << "- The house draws until it has at least 17.\n"
+                 << "=========================================" << endl << endl;
             break;
         case 3:
             cout << "Exiting the game. See you next time!" << endl;
             exit(0);
         default:
-            // In case of invalid choice, default game settings
             cout << "Invalid choice. Starting a new game by default." << endl << endl;
             break;
     }
 }
 
-// Goodbye message
 void displayGoodbyeMessage() {
     cout << "=========================================" << endl;
     cout << "      Thank you for playing Blackjack!   " << endl;
