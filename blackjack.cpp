@@ -1,16 +1,17 @@
 /* 
  * Author: Luis Y Vazquez Quiroz
- * Created on: 11/10/2024
+ * Created on: 12/08/2024
  * Purpose: Blackjack Game Project
  */
 
 // System Libraries
-#include "blackjack.h"
+#include "blackjack.h"  // Header
 #include <iostream>
 #include <ctime>
 
 using namespace std;
 
+// Function prototypes
 void displayWelcomeMessage();
 void displayGameMenu();
 void displayGoodbyeMessage();
@@ -18,17 +19,24 @@ void displayGoodbyeMessage();
 int main() {
     srand(static_cast<unsigned int>(time(0))); // Seed for random number generation
 
+    //Welcome message
     displayWelcomeMessage();
     displayGameMenu();
 
+    // Game
     BlackjackGame game;
     game.playGame();
 
+    // Final message
     displayGoodbyeMessage();
 
+    // Exit
     return 0;
 }
 
+// Function definitions
+
+// Welcome message
 void displayWelcomeMessage() {
     cout << "=========================================" << endl;
     cout << "        Welcome to the Blackjack Game!   " << endl;
@@ -43,6 +51,7 @@ void displayWelcomeMessage() {
          << "=========================================" << endl << endl;
 }
 
+// Game menu
 void displayGameMenu() {
     cout << "Game Options:" << endl;
     cout << "1. Start a new game" << endl;
@@ -57,6 +66,7 @@ void displayGameMenu() {
             cout << "Starting a new game..." << endl << endl;
             break;
         case 2:
+            // Rules
             cout << "=========================================" << endl;
             cout << "              Game Rules                " << endl;
             cout << "=========================================" << endl;
@@ -72,11 +82,13 @@ void displayGameMenu() {
             cout << "Exiting the game. See you next time!" << endl;
             exit(0);
         default:
+            // Default settings if choice is invalid
             cout << "Invalid choice. Starting a new game by default." << endl << endl;
             break;
     }
 }
 
+// Goodbye message
 void displayGoodbyeMessage() {
     cout << "=========================================" << endl;
     cout << "      Thank you for playing Blackjack!   " << endl;

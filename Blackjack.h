@@ -1,6 +1,6 @@
 /* 
  * Author: Luis Y Vazquez Quiroz
- * Created on: 11/10/2024
+ * Created on: 12/08/2024
  * Purpose: Blackjack Game Project
  */
 
@@ -14,7 +14,7 @@
 #include <set>
 #include <stack>
 #include <queue>
-#include <algorithm>
+// #include <algorithm> // Removed
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -38,8 +38,9 @@ private:
         Node(int k) : key(k), left(nullptr), right(nullptr), height(1) {}
     };
 
-    Node* root;
-
+    Node* root;     // Tree root
+    
+    // Node insertion function
     Node* insertNode(Node* node, int key) {
         if (!node) return new Node(key);
         if (key < node->key) {
@@ -51,12 +52,14 @@ private:
         return balance(node);
     }
 
+    // Height update
     void updateHeight(Node* node) {
         int hl = (node->left ? node->left->height : 0);
         int hr = (node->right ? node->right->height : 0);
         node->height = (hl > hr ? hl : hr) + 1;
     }
 
+    // Balancing factor
     int getBalanceFactor(Node* node) {
         if (!node) return 0;
         int hl = (node->left ? node->left->height : 0);
@@ -64,6 +67,7 @@ private:
         return hl - hr;
     }
 
+    // Right rotation
     Node* rotateRight(Node* y) {
         Node* x = y->left;
         Node* T2 = x->right;
@@ -74,6 +78,7 @@ private:
         return x;
     }
 
+    // Left rotation
     Node* rotateLeft(Node* x) {
         Node* y = x->right;
         Node* T2 = y->left;
@@ -100,6 +105,7 @@ private:
         return node;
     }
 
+    // Node clearing
     void clearNode(Node* node) {
         if (!node) return;
         clearNode(node->left);
@@ -145,11 +151,15 @@ public:
 };
 
 // Class for deck of cards
+/* This class represents a deck of cards composed of 7 decks with 52 cards,
+   this is implemented to simulate a card deck like in the casino, and not
+   just generate random cards. This could even allow for card counting*/
 class CardDeck {
 private:
     std::map<int, int> cardCounts;
     std::set<int> usedCards;
     std::stack<int> returnedCards;
+    // Array for the entire deck
     int deckArray[364];
 
     void initializeDeck() {
@@ -168,9 +178,12 @@ private:
                 deckArray[index++] = i;
             }
         }
+        
+        // Recursive shuffle new
         recursiveShuffleDeck(deckArray, 364);
     }
 
+    // Recursive function definition
     void recursiveShuffleDeck(int arr[], int n) {
         if (n <= 1) return;
         int r = rand() % n;
@@ -191,7 +204,6 @@ private:
 
 public:
     CardDeck() {
-        srand(static_cast<unsigned int>(time(0)));
         initializeDeck();
     }
 
@@ -213,7 +225,8 @@ public:
         usedCards.insert(card);
         return card;
     }
-
+    
+    // map to check if shuffling is needed
     bool needsReshuffling() const {
         int totalCardsUsed = 0;
         for (std::map<int,int>::const_iterator it = cardCounts.begin(); it != cardCounts.end(); ++it) {
@@ -222,6 +235,7 @@ public:
         return totalCardsUsed >= (52 * 7 * 3 / 4);
     }
 
+    // Return all the card
     void returnCard(int card) {
         returnedCards.push(card);
     }
@@ -241,6 +255,7 @@ public:
 };
 
 // Player class
+// All player attributes and related functions
 class Player {
 private:
     AVLTree hand[2];
@@ -358,7 +373,7 @@ public:
     }
 };
 
-// Game class
+// Game class to manage game and information
 class BlackjackGame {
 private:
     float balance;

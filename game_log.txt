@@ -51,3 +51,7 @@ Result: House wins, Balance: $120.00
 Result: Tie goes to dealer, Balance: $100.00
 Result: Player busts, Balance: $50.00
 Result: House wins, Balance: $0.00
+Result: House wins, Balance: $80.00
+Result: House wins, Balance: $60.00
+Result: House wins, Balance: $60.00
+Result: Player wins, Balance: $120.00

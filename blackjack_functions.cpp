@@ -1,6 +1,6 @@
 /* 
  * Author: Luis Y Vazquez Quiroz
- * Created on: 11/10/2024
+ * Created on: 12/08/2024
  * Purpose: Blackjack Game Project
  */
 
@@ -474,7 +474,6 @@ void BlackjackGame::playGame() {
                 int sz;
                 int* arr = player.getHandArray(hIndex, sz);
                 
-                // Calculate total and aces to decide on double down conditions
                 int acesCount = 0;
                 int totalVal = 0;
                 for (int idx = 0; idx < sz; idx++) {
@@ -492,9 +491,6 @@ void BlackjackGame::playGame() {
                     acesCount--;
                 }
 
-                // Double down conditions:
-                // Double if total 9,10,11 with no ace
-                // or total 16,17,18 with an ace
                 bool allowDouble = false;
                 if (sz == 2 && !player.isDoubledDown(hIndex)) {
                     if ((acesCount == 0 && (totalVal == 9 || totalVal == 10 || totalVal == 11)) ||
